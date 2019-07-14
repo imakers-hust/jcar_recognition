@@ -1,0 +1,5 @@
+- 神经网络需要模型模型文件，在model文件夹下添加
+- lib下的动态链接库，libtensorflow_cc.so文件也需要添加，同时lib下的opencv库需要添加软连接
+- 操作类似于ln -s /opt/ros/kinetic/lib/x86_64-linux-gnu/libopencv_imgproc3.so.3.3.1 libopencv_imgproc.so.3.0
+- 再建立动态链接库的路径，命令为export LD_LIBRARY_PATH=`pwd`/lib:$LD_LIBRARY_PATH
+- 其他需要修改的就是cmakelist里的设置，注意自己的cudnn可能需要重新安装，参考博客https://blog.csdn.net/Lucifer_zzq/article/details/76675239
