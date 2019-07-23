@@ -82,15 +82,15 @@ vector<cv::Rect>rects;
 double camera_factor = 1000;
 double camera_cx = 968/2;
 double camera_cy = 537/2;
-double camera_fx = 1068.8/2;
+double camera_fx = 1068.8/2;692.8
 double camera_fy = 1068/2;
 */
 //my kinect2
 double camera_factor = 1000;
-double camera_cx = 965/2;
-double camera_cy = 552/2;
-double camera_fx = 1066.6/2;
-double camera_fy = 1066.5/2;
+double camera_cx = 400.5;
+double camera_cy = 400.5;
+double camera_fx = 692.81;
+double camera_fy = 692.81;
 //sort point by y
 //bool compy(Point2f &a,Point2f &b)
 //{
@@ -231,6 +231,10 @@ void GetCloud(std::vector<ObjInfo>& rects, cv::Mat image_rgb, cv::Mat image_dept
          p.z = double(d) / camera_factor;
          p.x = (i- camera_cx) * p.z / camera_fx;
          p.y = (j - camera_cy) * p.z / camera_fy;
+         p.z = p.z/100;
+         p.x = p.x/100;
+         p.y = p.y/100;
+
 
          p.b = image_rgb.ptr<uchar>(j)[i*3];
          p.g = image_rgb.ptr<uchar>(j)[i*3+1];
@@ -350,7 +354,8 @@ void calculate_clouds_coordinate(std::vector<ObjInfo>&Obj_Frames)
 
 
 void image_Callback( const sensor_msgs::ImageConstPtr &image_rgb,
-                     const sensor_msgs::ImageConstPtr  &image_depth )
+                     const sensor_msgs::ImageConstPtr  &image_depth
+		      )
 {
   if(recognition_on==true)
   {
@@ -386,6 +391,11 @@ void image_Callback( const sensor_msgs::ImageConstPtr &image_rgb,
       }
       obj_it++;
     }
+
+	//camera_fx = cam_info->K[0] != 0?cam_info->K[0]:camera_fx;
+    	//camera_fy = cam_info->K[4] != 0?cam_info->K[4]:camera_fy;
+    	//camera_cx = cam_info->K[2] !=0?cam_info->K[2]:camera_cx;
+	//camera_cy = cam_info->K[5] !=0?cam_info->K[5]:camera_cy;
 
     GetCloud(Obj_Frames, mat_image_rgb, mat_image_depth );
 
@@ -462,7 +472,7 @@ int main(int argc, char **argv)
 
   //获取识别参数
   if(argc<2)
-    model_path = "/home/zhsyi/kinova/tensorflow/project/result1/frozen_inference_graph.pb";
+    model_path = "/home/petori/jcar_project/model/frozen_inference_graph.pb";
   else model_path = argv[1];
   if(!nh.getParam("threshold", recog_threshold))
     recog_threshold = 0.2;
@@ -474,10 +484,11 @@ int main(int argc, char **argv)
 
   message_filters::Subscriber<sensor_msgs::Image> image_rgb_sub(nh, image_rgb_str, 1);
   message_filters::Subscriber<sensor_msgs::Image>image_depth_sub(nh, image_depth_str, 1);
- // message_filters::Subscriber<sensor_msgs::CameraInfo>cam_info_sub(nh,  cam_info_str, 1);
+  //message_filters::Subscriber<sensor_msgs::CameraInfo>cam_info_sub(nh,  cam_info_str, 1);
 
 
   //同步深度图和彩色图
+
   message_filters::TimeSynchronizer<sensor_msgs::Image, sensor_msgs::Image> sync(image_rgb_sub, image_depth_sub, 10);
   sync.registerCallback(boost::bind(&image_Callback, _1, _2));
 
