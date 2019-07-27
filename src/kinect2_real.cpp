@@ -86,6 +86,9 @@ double camera_fx = 1068.8/2;692.8
 double camera_fy = 1068/2;
 */
 //my kinect2
+
+//记得改内参！！！！！！！
+
 double camera_factor = 1000;
 double camera_cx = 400.5;
 double camera_cy = 400.5;
@@ -231,10 +234,6 @@ void GetCloud(std::vector<ObjInfo>& rects, cv::Mat image_rgb, cv::Mat image_dept
          p.z = double(d) / camera_factor;
          p.x = (i- camera_cx) * p.z / camera_fx;
          p.y = (j - camera_cy) * p.z / camera_fy;
-         p.z = p.z/10;
-         p.x = p.x/10;
-         p.y = p.y/10;
-
 
          p.b = image_rgb.ptr<uchar>(j)[i*3];
          p.g = image_rgb.ptr<uchar>(j)[i*3+1];
@@ -496,10 +495,8 @@ int main(int argc, char **argv)
   detect_result_pub = nh.advertise<common_msgs::targetsVector>(detect_result_str.c_str(), 1000);
 
   //初始化识别
- // if(simulation_on==0)
-        InitRecognition(800, 800, 3);
-  //  else
-  //      InitRecognition(960, 540, 3);
+ 
+      InitRecognition(960, 540, 3);
 
   ros::spin();
   while(ros::ok());

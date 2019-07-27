@@ -28,7 +28,7 @@ INCLUDE_DIRECTORIES(${OpenCV_INCLUDE_DIRS}
  	            ${catkin_INCLUDE_DIRS}
   		    ${PCL_INCLUDE_DIRS})
 
-LINK_DIRECTORIES(/home/zhsyi/jcar_pro/src/jcar_recognition /usr/local/cuda-9.0/lib64)
+LINK_DIRECTORIES(/home/wyc/wyc_ws/src/camera/jcar_recognition /usr/local/cuda-9.0/lib64)
 LINK_DIRECTORIES(${PROJECT_SOURCE_DIR}/lib)
 ## System dependencies are found with CMake's conventions
 # find_package(Boost REQUIRED COMPONENTS system)
@@ -166,6 +166,18 @@ TARGET_LINK_LIBRARIES(camera_simulation
 
 ADD_EXECUTABLE(realsense2_real ${PROJECT_SOURCE_DIR}/src/realsense2_real.cpp)
 TARGET_LINK_LIBRARIES(realsense2_real
+    ${catkin_LIBRARIES}
+    ${OpenCV_LIBS}
+        "cudnn" "cublas" "cudart" "cusolver" "accinj64" "cufft" "cuinj64" "cusparse" "nppc" "nppial" "nppicc" "nppicom"
+        "nppidei" "nppif" "nppig" "nppim" "nppist" "nppisu" "nppitc" "npps" "nvblas" "nvgraph" "nvrtc-builtins" "nvrtc"
+        "nvToolsExt" "OpenCL"
+    "jcar_detection"
+    "tensorflow_cc"
+    "tensorflow_framework"
+    )
+
+ADD_EXECUTABLE(kinect2_real ${PROJECT_SOURCE_DIR}/src/kinect2_real.cpp)
+TARGET_LINK_LIBRARIES(kinect2_real
     ${catkin_LIBRARIES}
     ${OpenCV_LIBS}
         "cudnn" "cublas" "cudart" "cusolver" "accinj64" "cufft" "cuinj64" "cusparse" "nppc" "nppial" "nppicc" "nppicom"

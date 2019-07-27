@@ -42,7 +42,7 @@ int main(int argc, char *argv[])
 
     cout << "Object Detection!" << endl;
     // step 1
-    if(!InitSession("/home/zhsyi/jcar/src/jcar_project/model/frozen_inference_graph.pb", 1, src.cols, src.rows, src.channels()))
+    if(!InitSession("/home/wyc/wyc_ws/src/camera/jcar_recognition/model/frozen_inference_graph.pb", 1, src.cols, src.rows, src.channels()))
     {
         std::cout<< "init session\n";
         return -1;
