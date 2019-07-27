@@ -79,7 +79,7 @@ std::string model_path;
 float recog_threshold;
 
 bool show_image=false;
-bool recognition_on=true;
+bool recognition_on=false;
 bool simulation_on=false;
 common_msgs::targetsVector coordinate_vec;
 vector<PointCloud::Ptr> clouds;
@@ -88,30 +88,11 @@ vector<cv::Rect>rects;
 
 //realsense camera parameter
 double camera_factor = 1000;
-double camera_cx = 633.37;
-double camera_cy = 361.89;
-double camera_fx = 908.32;
-double camera_fy = 908.01;
+double camera_cx = 638.9251668336952;
+double camera_cy = 361.8208262607499;
+double camera_fx = 910.1410035061172;
+double camera_fy = 910.2328790906075;
 
-//sort point by y
-//bool compy(Point2f &a,Point2f &b)
-//{
-//  if (a.y<b.y)
-//    return true;
-//  else if (a.y==b.y && a.x<b.x)
-//    return true;
-//  else
-//    return false;
-//}
-//bool compx(Point2f &a,Point2f &b)
-//{
-//  if (a.x<b.x)
-//    return true;
-//  else if (a.x==b.x && a.y<b.y)
-//    return true;
-//  else
-//    return false;
-//}
 
 //把结构体按标签和置信度排序
 bool comp(const ObjInfo &a, const ObjInfo &b){
@@ -166,20 +147,25 @@ void Recognition(std::vector<ObjInfo>& obj_boxes, cv::Mat src)
   }
 
   ROS_INFO_STREAM("Object Detection!");
-
   // step 2
   cv::Mat res;
   cv::cvtColor(src, res, cv::COLOR_BGR2RGB);
   if(!FeedData(res))
   {
+      cout<<10<<endl;
     ROS_ERROR_STREAM("feed data");
     return ;
   }
   obj_boxes.clear();
 
   // step 3
-  if(!Detection(obj_boxes,res, recog_threshold))
+  bool testaaa=false;
+  testaaa=Detection(obj_boxes,res, recog_threshold);
+  //if(!Detection(obj_boxes,res, recog_threshold))
+  if(!testaaa)
+
   {
+
     ROS_ERROR_STREAM("detection");
     return ;
   }
@@ -205,8 +191,10 @@ void GetCloud(std::vector<ObjInfo>& rects, cv::Mat image_rgb, cv::Mat image_dept
  // cv::merge(HSV_split,image_HSV);
   cv::Mat img_thresholded;
   //int minh = 22, maxh = 95, mins = 0, maxs = 255, minv = 31, maxv = 229;
-  int minh = 0, maxh = 180, mins = 0, maxs = 255, minv = 0, maxv = 46;
+ //int minh = 0, maxh = 180, mins = 0, maxs = 255, minv = 0, maxv = 46;
 //  int minh = 0, maxh = 10, mins = 43, maxs = 255, minv = 46, maxv = 255;
+
+  int minh = 90, maxh = 111, mins = 0, maxs = 255, minv = 36, maxv = 157;
   cv::inRange(image_HSV, cv::Scalar(minh, mins, minv), cv::Scalar(maxh, maxs, maxv), img_thresholded);
 
   //开操作 (去除一些噪点)
@@ -331,13 +319,13 @@ void calculate_clouds_coordinate(std::vector<ObjInfo>&Obj_Frames)
         coordinate.qy = quaternion.y();
         coordinate.qz = quaternion.z();
         coordinate.qw = quaternion.w();
-        cout<<"center"<<endl;
-        cout<<coordinate.tag<<endl;
-        cout<<coordinate.px<<endl;
-        cout<<coordinate.py<<endl;
-        cout<< coordinate.x<<endl;
-        cout<< coordinate.y<<endl;
-        cout<< coordinate.z<<endl;
+//        cout<<"center"<<endl;
+//        cout<<coordinate.tag<<endl;
+//        cout<<coordinate.px<<endl;
+//        cout<<coordinate.py<<endl;
+//        cout<< coordinate.x<<endl;
+//        cout<< coordinate.y<<endl;
+//        cout<< coordinate.z<<endl;
         rects.clear();
         //put the calculated coordinate into the vector
         coordinate_vec.targets.push_back(coordinate);
@@ -365,6 +353,7 @@ void imageCallback_color( const sensor_msgs::ImageConstPtr &image_rgb)
         std::vector<ObjInfo> Obj_Frames;
         ros::Time start_esti = ros::Time::now();
         Recognition(Obj_Frames, mat_image_rgb);
+
         ros::Duration recog_interval = ros::Time::now()-start_esti;
         ROS_INFO_STREAM("Recognizing image for "<<recog_interval.toSec()<<" s!!!");
 
@@ -396,6 +385,8 @@ void imageCallback_color( const sensor_msgs::ImageConstPtr &image_rgb)
         //cout<<"PCA method has done!"<<endl;
 
         //发送点云对应坐标
+        if(coordinate_vec.targets.size()==0)
+             coordinate_vec.targets.clear();
         detect_result_pub.publish(coordinate_vec);
         cout<<"information publish success!"<<endl;
 
@@ -426,6 +417,7 @@ void imageCallback_color( const sensor_msgs::ImageConstPtr &image_rgb)
       }
     //imshow("show picture1",mat_image_rgb);
     //waitKey(1.5);
+    recognition_on =false;
 }
 
 
@@ -466,10 +458,10 @@ int main(int argc, char **argv)
 
   //获取识别参数
   if(argc<2)
-    model_path = "/home/zhsyi/jcar_pro/src/jcar_recognition/model/frozen_inference_graph.pb";
+    model_path = "/home/wyc/wyc_ws/src/camera/jcar_recognition/model/frozen_inference_graph_real_105095.pb";
   else model_path = argv[1];
   if(!nh.getParam("threshold", recog_threshold))
-    recog_threshold = 0.8;
+    recog_threshold = 0.1;
 //  if(!nh.getParam("show_cloud", show_cloud))
 //    show_cloud = false;
   if(!nh.getParam("simulation", simulation_on))
@@ -479,12 +471,12 @@ int main(int argc, char **argv)
   image_transport::Subscriber sub1 = it.subscribe(image_rgb_str, 1, imageCallback_color);
 
   ros::Subscriber detect_sub = nh.subscribe(detect_target_str, 1000, RobotSignalCallback);
-  detect_result_pub = nh.advertise<common_msgs::targetsVector>(detect_result_str.c_str(), 1000);
+  detect_result_pub = nh.advertise<common_msgs::targetsVector>(detect_result_str.c_str(), 1);
 
  // if(simulation_on==0)
  //       InitRecognition(800, 800, 3);
  //   else
-        InitRecognition(960, 540, 3);
+        InitRecognition(1280, 720, 3);
 
   ros::spin();
   while(ros::ok());
